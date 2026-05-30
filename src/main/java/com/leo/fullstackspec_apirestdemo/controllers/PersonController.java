@@ -21,9 +21,9 @@ public class PersonController {
         return service.findAll();
     }
 
-    @GetMapping("/{name}")
-    public PersonEntity findByName(@PathVariable String name) {
-        return service.findByNameOrFail(name);
+    @GetMapping("/{id}")
+    public PersonEntity findById(@PathVariable Long id) {
+        return service.findByIdOrFail(id);
     }
 
     @PostMapping

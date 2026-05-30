@@ -64,13 +64,4 @@ public class PersonService {
                     "Pessoa não encontrada."
                 ));
     }
-
-    public PersonEntity findByNameOrFail(String name) {
-        return repository
-                .findByName(name)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "Pessoa não encontrada."
-                ));
-    }
 }
