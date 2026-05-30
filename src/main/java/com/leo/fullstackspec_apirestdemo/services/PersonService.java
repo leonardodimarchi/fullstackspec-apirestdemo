@@ -2,69 +2,63 @@ package com.leo.fullstackspec_apirestdemo.services;
 
 import com.leo.fullstackspec_apirestdemo.dtos.PersonRequest;
 import com.leo.fullstackspec_apirestdemo.entities.PersonEntity;
+import com.leo.fullstackspec_apirestdemo.repositories.PersonRepository;
+import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@AllArgsConstructor
 public class PersonService {
-    private static final List<PersonEntity> persons = new ArrayList<>();
+
+    private final PersonRepository repository;
 
     public PersonEntity create(PersonRequest payload) {
         PersonEntity entity = PersonEntity.builder()
-                .id(generateNewId())
                 .name(payload.name())
                 .age(payload.age())
                 .build();
 
-        persons.add(entity);
-
-        return entity;
+        return repository.save(entity);
     }
 
     public PersonEntity patch(Long id, PersonRequest payload) {
         PersonEntity existing = findByIdOrFail(id);
 
-        PersonEntity updated = PersonEntity.builder()
-                .id(id)
-                .name(payload.name() != null ? payload.name() : existing.getName())
-                .age(payload.age() != null ? payload.age() : existing.getAge())
-                .build();
+        if (payload.name() != null) {
+            existing.setName(payload.name());
+        }
 
-        persons.removeIf(person -> person.getId().equals(id));
-        persons.add(updated);
+        if (payload.age() != null) {
+            existing.setAge(payload.age());
+        }
 
-        return updated;
+        return repository.save(existing);
     }
 
     public PersonEntity put(Long id, PersonRequest payload) {
-        PersonEntity updated = PersonEntity.builder()
-                .id(payload.id())
-                .name(payload.name())
-                .age(payload.age())
-                .build();
+        PersonEntity existing = findByIdOrFail(id);
 
-        persons.removeIf(person -> person.getId().equals(id));
-        persons.add(updated);
+        existing.setName(payload.name());
+        existing.setAge(payload.age());
 
-        return updated;
+        return repository.save(existing);
     }
 
     public List<PersonEntity> findAll() {
-        return persons;
+        return repository.findAll();
     }
 
     public void delete(Long id) {
-        persons.removeIf(person -> person.getId().equals(id));
+        repository.deleteById(id);
     }
 
     public PersonEntity findByIdOrFail(Long id) {
-        return persons.stream()
-                .filter(person -> person.getId().equals(id))
-                .findFirst()
+        return repository
+                .findById(id)
                 .orElseThrow(() -> new ResponseStatusException(
                     HttpStatus.NOT_FOUND,
                     "Pessoa não encontrada."
@@ -72,19 +66,11 @@ public class PersonService {
     }
 
     public PersonEntity findByNameOrFail(String name) {
-        return persons.stream()
-                .filter(person -> person.getName().equalsIgnoreCase(name))
-                .findFirst()
+        return repository
+                .findByName(name)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
                         "Pessoa não encontrada."
                 ));
-    }
-
-    private Long generateNewId() {
-        return persons.stream()
-                .map(PersonEntity::getId)
-                .max(Long::compareTo)
-                .orElse(0L) + 1;
     }
 }
