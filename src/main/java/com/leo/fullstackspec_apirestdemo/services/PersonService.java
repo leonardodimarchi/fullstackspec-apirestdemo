@@ -73,7 +73,7 @@ public class PersonService {
 
     public PersonEntity findByNameOrFail(String name) {
         return persons.stream()
-                .filter(person -> person.getName().equals(name))
+                .filter(person -> person.getName().equalsIgnoreCase(name))
                 .findFirst()
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
